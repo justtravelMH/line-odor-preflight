@@ -1,0 +1,1 @@
+import DeleteRequest from '@/components/DeleteRequest';export default function Page(){return <main className="shell"><h1>隱私與資料刪除</h1><div className="card"><h2>我們保存什麼</h2><p>你主動提交的味道等級、改善方式、選填特殊事件與必要的技術紀錄。</p><h2>用來做什麼</h2><p>建立個人基準並以固定規則顯示趨勢；不做醫療診斷、廣告定向或資料出售。</p><h2>第三方服務</h2><p>LINE、Vercel、Supabase、Sentry、PostHog。</p></div><DeleteRequest/></main>}

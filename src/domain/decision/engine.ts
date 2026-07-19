@@ -1,0 +1,30 @@
+import {RULE_VERSION,THRESHOLDS as T} from './thresholds';
+export type ResultCode='INSUFFICIENT_DATA'|'BASELINE_READY'|'POSSIBLE_IMPROVEMENT'|'CLEAR_IMPROVEMENT'|'NO_CLEAR_CHANGE'|'POSSIBLE_WORSENING'|'UNABLE_TO_DETERMINE';
+export type RecordPoint={level:number;at?:Date;timeBucket?:string;specialEvent?:boolean};
+export type DecisionInput={baseline:RecordPoint[];post:RecordPoint[];hasActiveImprovement:boolean;multipleChanges?:boolean;baselineDominantBucket?:string;analysisWindowDays?:number};
+export type DecisionResult={code:ResultCode;ruleVersion:string;baselineCount:number;postCount:number;baselineMedian?:number;postMedian?:number;delta?:number;lowerRatio?:number;specialEventRatio?:number;timeBucketMismatchRatio?:number;medianIntervalHours?:number;reasonCodes:string[]};
+export const median=(values:number[])=>{if(!values.length)return undefined;const v=[...values].sort((a,b)=>a-b),m=Math.floor(v.length/2);return v.length%2?v[m]:(v[m-1]+v[m])/2};
+const ratio=(n:number,d:number)=>d?n/d:0;
+export function decide(i:DecisionInput):DecisionResult{
+ const baseline=i.baseline.filter(r=>Number.isInteger(r.level)&&r.level>=0&&r.level<=3).slice(-T.MAX_BASELINE_RECORDS),post=i.post.filter(r=>Number.isInteger(r.level)&&r.level>=0&&r.level<=3).slice(-10);
+ const base:Omit<DecisionResult,'code'>={ruleVersion:RULE_VERSION,baselineCount:baseline.length,postCount:post.length,reasonCodes:[]};
+ if(baseline.length<T.MIN_BASELINE_RECORDS)return {...base,code:'INSUFFICIENT_DATA',reasonCodes:['BASELINE_LT_3']};
+ if(!i.hasActiveImprovement)return {...base,code:'BASELINE_READY',reasonCodes:['NO_ACTIVE_IMPROVEMENT']};
+ if(post.length<T.MIN_POST_RECORDS)return {...base,code:'INSUFFICIENT_DATA',reasonCodes:['POST_LT_3']};
+ const bm=median(baseline.map(r=>r.level))!,pm=median(post.map(r=>r.level))!,delta=bm-pm;
+ const lower=ratio(post.filter(r=>r.level<=bm-1).length,post.length),special=ratio(post.filter(r=>r.specialEvent).length,post.length);
+ const mismatch=i.baselineDominantBucket?ratio(post.filter(r=>r.timeBucket!==i.baselineDominantBucket).length,post.length):0;
+ const times=post.map(r=>r.at?.getTime()).filter((v):v is number=>typeof v==='number').sort((a,b)=>a-b);
+ const interval=times.length>1?median(times.slice(1).map((t,x)=>(t-times[x])/36e5)):0;
+ const common={...base,baselineMedian:bm,postMedian:pm,delta,lowerRatio:lower,specialEventRatio:special,timeBucketMismatchRatio:mismatch,medianIntervalHours:interval};
+ if(i.multipleChanges)return {...common,code:'UNABLE_TO_DETERMINE',reasonCodes:['MULTIPLE_CHANGES']};
+ if(special>T.MAX_SPECIAL_EVENT_RATIO)return {...common,code:'UNABLE_TO_DETERMINE',reasonCodes:['SPECIAL_EVENT_RATIO_HIGH']};
+ if(mismatch>T.MAX_TIME_BUCKET_MISMATCH_RATIO)return {...common,code:'UNABLE_TO_DETERMINE',reasonCodes:['TIME_BUCKET_MISMATCH_HIGH']};
+ if((interval??0)>T.MAX_MEDIAN_INTERVAL_HOURS)return {...common,code:'UNABLE_TO_DETERMINE',reasonCodes:['INTERVAL_TOO_LONG']};
+ if((i.analysisWindowDays??0)>T.MAX_ANALYSIS_WINDOW_DAYS)return {...common,code:'UNABLE_TO_DETERMINE',reasonCodes:['WINDOW_TOO_LONG']};
+ if(post.length>=T.MIN_CLEAR_POST_RECORDS&&delta>=T.CLEAR_DELTA_MIN&&lower>=T.CLEAR_MAJORITY_RATIO)return {...common,code:'CLEAR_IMPROVEMENT',reasonCodes:['CLEAR_THRESHOLDS_MET']};
+ if(delta>=T.POSSIBLE_DELTA_MIN)return {...common,code:'POSSIBLE_IMPROVEMENT',reasonCodes:['POSSIBLE_DELTA']};
+ if(Math.abs(delta)<T.NO_CLEAR_DELTA_MAX_EXCLUSIVE)return {...common,code:'NO_CLEAR_CHANGE',reasonCodes:['DELTA_SMALL']};
+ if(delta<=-T.WORSENING_DELTA_MIN)return {...common,code:'POSSIBLE_WORSENING',reasonCodes:['NEGATIVE_DELTA']};
+ return {...common,code:'UNABLE_TO_DETERMINE',reasonCodes:['NO_RULE_MATCH']};
+}

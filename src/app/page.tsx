@@ -1,0 +1,1 @@
+export default function Home(){return <main className="shell"><span className="pill">LINE 味道紀錄</span><h1>用簡單紀錄，看見家裡味道的變化</h1><div className="card"><p>從 LINE 開始記錄 0～3 級，完成三筆建立自己的日常基準。</p><p className="muted">這是生活紀錄與趨勢判斷工具，不是醫療診斷或科學檢測。</p></div></main>}

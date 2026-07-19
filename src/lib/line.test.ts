@@ -1,0 +1,2 @@
+import {expect,it} from 'vitest';import crypto from 'node:crypto';import {parsePostback,validLineSignature} from './line';
+it('validates signature',()=>{const s=crypto.createHmac('sha256','secret').update('{}').digest('base64');expect(validLineSignature('{}',s,'secret')).toBe(true);expect(validLineSignature('{}','bad','secret')).toBe(false)});it('parses versioned postback',()=>expect(parsePostback('v=1&action=record_odor&level=2')).toEqual({v:'1',action:'record_odor',level:'2',type:undefined,recordId:undefined}));

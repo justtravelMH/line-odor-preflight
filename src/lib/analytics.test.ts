@@ -1,0 +1,1 @@
+import {expect,it} from 'vitest';import {safeAnalyticsProperties} from './analytics';it('drops forbidden analytics fields',()=>expect(safeAnalyticsProperties({event_name:'recorded',user_state:'BUILDING_BASELINE',line_user_id:'secret',note:'text',token:'secret'})).toEqual({event_name:'recorded',user_state:'BUILDING_BASELINE'}));
