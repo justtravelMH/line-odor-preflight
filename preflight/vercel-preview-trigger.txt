@@ -1,2 +1,3 @@
 Gate B GitHub-triggered Preview verification.
 Environment variable redeployment verification.
+Supabase server-only connectivity verification.
