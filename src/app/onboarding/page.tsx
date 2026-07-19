@@ -1,0 +1,1 @@
+import LiffOnboarding from '@/components/LiffOnboarding';export default function Page(){return <main className="shell"><span className="pill">首次設定</span><h1>先建立你家的記錄方式</h1><p>只需要一次。之後每天記錄時，不用再輸入日期或時間。</p><LiffOnboarding/></main>}

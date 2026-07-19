@@ -1,0 +1,5 @@
+import {describe,expect,it} from 'vitest';import {decide,median,type RecordPoint} from './engine';
+const p=(xs:number[]):RecordPoint[]=>xs.map(level=>({level,timeBucket:'EVENING'}));
+describe('decision engine',()=>{it('median',()=>{expect(median([3,1,2])).toBe(2);expect(median([1,2,3,4])).toBe(2.5)});it.each([
+ ['B1',[2,2],[],false,'INSUFFICIENT_DATA'],['B2',[2,2,3],[],false,'BASELINE_READY'],['P1',[2,2,2],[1,2,1],true,'POSSIBLE_IMPROVEMENT'],['C1',[2,2,3],[1,1,1,1,2],true,'CLEAR_IMPROVEMENT'],['N1',[2,2,2],[2,2,2],true,'NO_CLEAR_CHANGE'],['W1',[1,1,2],[2,2,2],true,'POSSIBLE_WORSENING']
+ ] as const)('%s',(_,b,a,active,want)=>expect(decide({baseline:p([...b]),post:p([...a]),hasActiveImprovement:active}).code).toBe(want));it('special events block attribution',()=>{const post=p([1,1,1]).map((r,i)=>({...r,specialEvent:i<2}));expect(decide({baseline:p([2,2,2]),post,hasActiveImprovement:true}).code).toBe('UNABLE_TO_DETERMINE')});it('multiple changes block attribution',()=>expect(decide({baseline:p([2,2,2]),post:p([1,1,1]),hasActiveImprovement:true,multipleChanges:true}).code).toBe('UNABLE_TO_DETERMINE'))});

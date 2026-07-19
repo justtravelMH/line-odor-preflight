@@ -1,0 +1,17 @@
+release:
+  version: "UNRELEASED"
+  git_commit: "BLOCKED_GH_CLI_UNAVAILABLE"
+  vercel_deployment: "BLOCKED_SOURCE_NOT_PUBLISHED"
+  database_migration:
+    - "line_odor_mvp_initial_schema: APPLIED"
+    - "line_odor_security_and_indexes: APPLIED"
+  line_webhook_verified_at: "BLOCKED_REQUIRES_PRODUCTION_URL_AND_LINE_CONSOLE"
+  liff_phone_test_ios: "MANUAL_EVIDENCE_REQUIRED"
+  liff_phone_test_android: "MANUAL_EVIDENCE_REQUIRED"
+  test_run_url: "BLOCKED_GITHUB_ACTIONS_NOT_TRIGGERED"
+  local_test_run: "PASS: lint, typecheck, 12 unit tests, production build"
+  sentry_test_event: "BLOCKED_KEYS_AND_LIVE_EVENT_REQUIRED"
+  posthog_schema_review: "PARTIAL: allowlist unit test passed; live event required"
+  requirement_matrix_status: "NOT_RELEASED: MANUAL/BLOCKED evidence remains"
+  approver: null
+  approved_at: null
