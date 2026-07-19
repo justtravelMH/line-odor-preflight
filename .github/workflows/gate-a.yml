@@ -24,3 +24,5 @@ jobs:
         run: bash scripts/preflight.sh
       - name: Verify server secret boundary
         run: bash scripts/secret-boundary.sh
+      - name: Verify LINE raw-body signatures
+        run: node scripts/test-line-signature.mjs

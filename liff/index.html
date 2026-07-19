@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LIFF 雲端預檢</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; background: #f7f3e8; color: #244037; }
+      main { max-width: 34rem; margin: 0 auto; padding: 2rem 1.25rem; }
+      section { background: white; border-radius: 1.25rem; padding: 1.25rem; box-shadow: 0 0.5rem 2rem #24403718; }
+      h1 { font-size: 1.5rem; }
+      li { margin: 0.75rem 0; }
+      .pass { color: #15803d; }
+      .fail { color: #b91c1c; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section>
+        <h1>LINE LIFF 雲端預檢</h1>
+        <p>此頁只驗證登入、server token 與使用者隔離，不是正式產品。</p>
+        <ol id="results"><li>正在初始化 LIFF…</li></ol>
+      </section>
+    </main>
+    <script>
+      const results = document.querySelector("#results");
+      const add = (text, pass) => {
+        const li = document.createElement("li");
+        li.textContent = `${pass ? "✓" : "✗"} ${text}`;
+        li.className = pass ? "pass" : "fail";
+        results.append(li);
+      };
+
+      async function run() {
+        results.textContent = "";
+        const config = await fetch("/api/liff/config").then((r) => r.json());
+        if (!config.configured) throw new Error("LIFF 尚未設定");
+
+        await liff.init({ liffId: config.liffId });
+        add("liff.init 成功", true);
+        if (!liff.isLoggedIn()) return liff.login();
+
+        const accessToken = liff.getAccessToken();
+        const verifiedResponse = await fetch("/api/liff/verify", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ accessToken }),
+        });
+        const verified = await verifiedResponse.json();
+        add("server-side token verification", verifiedResponse.ok);
+        if (!verifiedResponse.ok) return;
+        add(`internal user：${verified.internalUserId}`, true);
+
+        const unauthorized = await fetch("/api/liff/verify", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ accessToken: "invalid-or-expired-token" }),
+        });
+        add("無效／過期 token 已拒絕", unauthorized.status === 401);
+
+        const crossUser = await fetch(
+          "/api/liff/resource?owner=00000000-0000-4000-8000-000000000099",
+          { headers: { authorization: `Bearer ${accessToken}` } },
+        );
+        add("跨使用者存取已拒絕", crossUser.status === 403);
+      }
+
+      run().catch((error) => add(error.message, false));
+    </script>
+  </body>
+</html>
