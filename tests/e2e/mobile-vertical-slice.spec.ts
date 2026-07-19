@@ -10,7 +10,8 @@ test('mobile onboarding through deletion confirmation uses real APIs', async ({p
   await page.goto('/onboarding');
   await page.getByRole('button', {name: '2', exact: true}).click();
   await page.getByRole('button', {name: '靠近砂盆'}).click();
-  await page.getByRole('checkbox').check();
+  await page.getByText(/我同意保存主動提交的紀錄/).click();
+  await expect(page.getByRole('checkbox')).toBeChecked();
   await page.getByRole('button', {name: '完成設定'}).click();
   await expect(page.getByTestId('onboarding-complete')).toContainText('首次設定已完成');
 
@@ -36,7 +37,8 @@ test('mobile onboarding through deletion confirmation uses real APIs', async ({p
   await expect(page.getByTestId('latest-result')).toContainText('POSSIBLE_IMPROVEMENT');
 
   await page.goto('/privacy');
-  await page.getByRole('checkbox').check();
+  await page.getByText('我了解這項操作無法復原').click();
+  await expect(page.getByRole('checkbox')).toBeChecked();
   await page.getByRole('button', {name: '送出刪除申請'}).click();
   await expect(page.getByTestId('deletion-status')).toContainText('PENDING');
 });
