@@ -1,1 +1,5 @@
-const demo:never[]=[];export default function Page(){return <main className="shell"><h1>最近紀錄</h1><div className="card"><span className="pill">目前方案</span><p className="muted">尚未建立改善方案</p></div>{demo.length===0?<div className="card"><h2>還沒有紀錄</h2><p>從 LINE 點「記錄現在味道」開始。</p></div>:null}</main>}
+import RecordsDashboard from '@/components/RecordsDashboard';
+
+export default function Page() {
+  return <main className="shell"><h1>最近紀錄</h1><RecordsDashboard/></main>;
+}

@@ -4,7 +4,7 @@ Generated: 2026-07-19 (Asia/Taipei)
 
 Release decision: **BLOCKED — do not release**.
 
-This report reads `REQUIREMENT_COVERAGE_MATRIX.md` as the only requirement coverage matrix and `RELEASE_CHECKLIST.md` as the release gate. No excluded feature was added and all decisions are deterministic TypeScript/SQL.
+This is the historical pre-publication report from the implementation package. The referenced `REQUIREMENT_COVERAGE_MATRIX.md` and `RELEASE_CHECKLIST.md` are not present in the repository or implementation ZIP, so this file must not be used to close Requirement IDs. Current vertical-slice evidence is recorded in `VERTICAL_SLICE_EVIDENCE.md` without inventing missing IDs.
 
 ## Phase evidence
 
@@ -22,9 +22,9 @@ This report reads `REQUIREMENT_COVERAGE_MATRIX.md` as the only requirement cover
 
 ## Requirement matrix readout
 
-- No requirement is marked `MISSING` in the source matrix.
-- R-009, R-012, and R-024 are `MANUAL` and have no attached phone/console receipt in this run.
-- Several `COVERED` rows lack a published commit/CI/live test evidence, so Delivery Gate cannot treat their specification status as release evidence.
+- The source requirement matrix is unavailable in this checkout.
+- No Requirement ID is closed or marked `COVERED` by this report.
+- Any prior references to R-009, R-012, or R-024 are historical only and require the missing source matrix before they can be evaluated.
 
 ## Specification conflict recorded
 

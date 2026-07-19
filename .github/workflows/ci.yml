@@ -1,19 +1,68 @@
 name: Delivery Gate
 on: [push, pull_request]
 permissions: {contents: read}
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: line_odor_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d line_odor_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with: {fetch-depth: 0}
       - uses: actions/setup-node@v4
         with: {node-version: 22, cache: npm}
       - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run unit
-      - run: npm run build
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit and snapshot tests
+        run: npm run unit
+      - name: API integration tests
+        run: npm run integration
+      - name: Empty database migration and cross-user RLS tests
+        run: npm run test:migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/line_odor_test
+      - name: Production build
+        run: npm run build
+        env:
+          LINE_CHANNEL_SECRET: server-only-line-channel-secret-sentinel
+          LINE_CHANNEL_ACCESS_TOKEN: server-only-line-access-token-sentinel
+          LINE_LOGIN_CHANNEL_SECRET: server-only-line-login-secret-sentinel
+          SUPABASE_SERVICE_ROLE_KEY: server-only-supabase-role-sentinel
+          LINE_USER_ID_ENCRYPTION_KEY: server-only-identity-key-sentinel-000000
+          POSTBACK_SIGNING_KEY: server-only-postback-key-sentinel-0000000
+          SESSION_SIGNING_KEY: server-only-session-key-sentinel-000000000
+          ADMIN_EXPORT_KEY: server-only-admin-export-sentinel-000000000
+      - name: Client bundle contains no server secrets
+        run: npm run test:bundle-secrets
+        env:
+          LINE_CHANNEL_SECRET: server-only-line-channel-secret-sentinel
+          LINE_CHANNEL_ACCESS_TOKEN: server-only-line-access-token-sentinel
+          LINE_LOGIN_CHANNEL_SECRET: server-only-line-login-secret-sentinel
+          SUPABASE_SERVICE_ROLE_KEY: server-only-supabase-role-sentinel
+          LINE_USER_ID_ENCRYPTION_KEY: server-only-identity-key-sentinel-000000
+          POSTBACK_SIGNING_KEY: server-only-postback-key-sentinel-0000000
+          SESSION_SIGNING_KEY: server-only-session-key-sentinel-000000000
+          ADMIN_EXPORT_KEY: server-only-admin-export-sentinel-000000000
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Mobile Playwright vertical slice
+        run: npm run e2e
       - name: Validate .env.example placeholders
         shell: bash
         run: |
