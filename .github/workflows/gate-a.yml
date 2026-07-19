@@ -22,3 +22,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Run Gate A test
         run: bash scripts/preflight.sh
+      - name: Verify server secret boundary
+        run: bash scripts/secret-boundary.sh
