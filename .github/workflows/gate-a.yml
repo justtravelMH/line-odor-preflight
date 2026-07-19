@@ -1,0 +1,24 @@
+name: Gate A preflight
+
+on:
+  push:
+    branches:
+      - agent/cloud-preflight
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  repository-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PREFLIGHT_GATE: A
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Gate A test
+        run: bash scripts/preflight.sh
